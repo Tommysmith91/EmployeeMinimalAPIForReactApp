@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33205.214
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeMinimalAPI.Tests", "..\EmployeeMinimalAPI.Tests\EmployeeMinimalAPI.Tests.csproj", "{F5566A0A-9ACA-4738-B387-B70509439C99}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeMinimalAPI.Tests", "EmployeeMinimalAPI.Tests\EmployeeMinimalAPI.Tests.csproj", "{F5566A0A-9ACA-4738-B387-B70509439C99}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EmployeeAPI", "MinimalEmployeeAPI\EmployeeAPI.csproj", "{99245FFA-6BFE-442F-B92E-86D7E30FA471}"
 EndProject
