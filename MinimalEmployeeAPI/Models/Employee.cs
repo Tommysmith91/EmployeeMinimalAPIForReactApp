@@ -15,5 +15,23 @@ namespace EmployeeAPI.Models
         public string Postcode { get; set; } = string.Empty;
         public string Country { get; set; } = string.Empty;
         public bool HasRightToWork { get; set; }
+
+        public Employee()
+        {
+
+        }
+        public Employee(EmployeeDTO employeeDTO)
+        {
+            Id = employeeDTO.Id;
+            Name = employeeDTO.Name;
+            Age = employeeDTO.Age;
+            StartOfEmployment = employeeDTO.StartOfEmployment;
+            AddressLine1 = employeeDTO.AddressLine1;
+            AddressLine2 = employeeDTO.AddressLine2;
+            CityTown = employeeDTO.CityTown;
+            Postcode = employeeDTO.Postcode;
+            Country = employeeDTO.Country;
+            HasRightToWork = employeeDTO.HasRightToWork;
+        }
     }
 }

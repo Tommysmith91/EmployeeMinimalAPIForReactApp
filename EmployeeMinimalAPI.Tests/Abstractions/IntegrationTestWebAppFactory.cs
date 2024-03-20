@@ -30,12 +30,14 @@ namespace EmployeeMinimalAPI.Tests.Abstractions
         {
             builder.ConfigureTestServices(services =>
             {
+                //Swap MyDB for Test Container DB.
                 services.RemoveAll(typeof(DbContextOptions<EmployeeDb>));
                 services.AddDbContext<EmployeeDb>(options => options.UseSqlServer(_msSQLContainer.GetConnectionString()));
             });
         }
         protected override IHost CreateHost(IHostBuilder builder)
         {
+            //Create Test Client For Communication with Minimal API.
            var host = base.CreateHost(builder);
            ApiClient = host.GetTestClient();
            return host;

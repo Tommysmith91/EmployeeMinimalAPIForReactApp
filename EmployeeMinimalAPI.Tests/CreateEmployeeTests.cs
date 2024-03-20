@@ -5,6 +5,8 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using System.Net;
 using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace EmployeeMinimalAPI.Tests
 {
@@ -21,18 +23,43 @@ namespace EmployeeMinimalAPI.Tests
         public async Task ShouldReturn201CreatedStatusCodeOnSuccessfulCreation()
         {
             //Arrange
-            var request = CreateEmployeeRequest();
+            var request = CreateSuccessfulEmployeeRequest();
             //Act
             var response = await _factory.ApiClient.PostAsJsonAsync("/employees", request);
             //Assert
             response.Should().HaveStatusCode(HttpStatusCode.Created);          
+        }
+        [Fact]
+        public async Task ShouldReturn400BadRequestStatusCodeOnFailedCreation()
+        {
+            //Arrange
+            var request = CreateBadEmployeeRequestWithNoNameAndZeroAge();
+            //Act
+            var response = await _factory.ApiClient.PostAsJsonAsync("/employees", request);
+            //Assert
+            response.Should().HaveStatusCode(HttpStatusCode.BadRequest);
+        }
+        [Fact]
+        public async Task ShouldReturnErrorMessagesOnBadRequest()
+        {
+            //Arrange
+            var request = CreateBadEmployeeRequestWithNoNameAndZeroAge();
+            //Act
+            var response = await _factory.ApiClient.PostAsJsonAsync("/employees", request);
+            var jsonContent = await response.Content.ReadAsStringAsync();            
+            
+            //Assert
+            response.Should().HaveStatusCode(HttpStatusCode.BadRequest);
+            jsonContent.Should().NotBeEmpty();
+            jsonContent.Should().ContainAny(new List<string> { "Age", "Name" });      
+            
         }
 
         [Fact]
         public async Task ShouldReturnObjectThatIsEqualToRequestObjectProvided()
         {
             //Arrange
-            var request = CreateEmployeeRequest();
+            var request = CreateSuccessfulEmployeeRequest();
             //Act
             var response = await _factory.ApiClient.PostAsJsonAsync("/employees", request);            
             //Assert            
@@ -48,7 +75,7 @@ namespace EmployeeMinimalAPI.Tests
             resultObject.CityTown.Should().Be(request.CityTown);
         }
 
-        private Employee CreateEmployeeRequest()
+        private Employee CreateSuccessfulEmployeeRequest()
         {
             return new Employee
             {
@@ -56,6 +83,20 @@ namespace EmployeeMinimalAPI.Tests
                 CityTown = Faker.LocationFaker.City(),
                 Name = Faker.NameFaker.Name(),
                 Age = Faker.NumberFaker.Number(1, 100),
+                Country = Faker.LocationFaker.Country(),
+                Postcode = Faker.LocationFaker.PostCode(),
+                HasRightToWork = Faker.BooleanFaker.Boolean(),
+                StartOfEmployment = Faker.DateTimeFaker.DateTime()
+            };
+        }
+        private Employee CreateBadEmployeeRequestWithNoNameAndZeroAge()
+        {
+            return new Employee
+            {
+                AddressLine1 = $"{Faker.LocationFaker.StreetNumber()} {Faker.LocationFaker.StreetName()}",
+                CityTown = Faker.LocationFaker.City(),
+                Name = "",
+                Age = 0,
                 Country = Faker.LocationFaker.Country(),
                 Postcode = Faker.LocationFaker.PostCode(),
                 HasRightToWork = Faker.BooleanFaker.Boolean(),

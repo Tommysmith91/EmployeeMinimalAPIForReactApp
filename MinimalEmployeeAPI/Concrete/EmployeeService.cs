@@ -1,5 +1,6 @@
 ﻿using EmployeeAPI.Abstractions;
 using EmployeeAPI.Models;
+using FluentValidation;
 using System.Runtime.CompilerServices;
 
 namespace EmployeeAPI.Concrete
@@ -7,16 +8,26 @@ namespace EmployeeAPI.Concrete
     public class EmployeeService : IEmployeeService
     {
         private readonly IEmployeeRepositary _employeeRepositary;
+        private readonly IValidator<Employee> _employeeValidator;
 
-        public EmployeeService(IEmployeeRepositary employeeRepositary)
+        public EmployeeService(IEmployeeRepositary employeeRepositary,IValidator<Employee> employeeValidator)
         {
             _employeeRepositary = employeeRepositary;
+            _employeeValidator = employeeValidator;
         }
         public async Task<IResponseDataModel<EmployeeDTO>> CreateEmployee(Employee employee)
         {
             try
             {
-
+                var validationResult = _employeeValidator.Validate(employee);
+                if(validationResult.IsValid == false)
+                {
+                    return new ResponseDataModel<EmployeeDTO>()
+                    {
+                        Success = false,
+                        Message = string.Join(" ", validationResult.Errors.Select(x=> x.ErrorMessage))
+                    };
+                }
                 var result = await _employeeRepositary.CreateEmployee(employee);
                 if (result.Success)
                 {
@@ -28,7 +39,7 @@ namespace EmployeeAPI.Concrete
                 }
                 return new ResponseDataModel<EmployeeDTO>
                 {
-                    Success = false
+                    Success = false                    
                 };
             }
             catch 

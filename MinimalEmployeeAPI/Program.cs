@@ -1,7 +1,9 @@
 using EmployeeAPI;
 using EmployeeAPI.Abstractions;
 using EmployeeAPI.Concrete;
+using EmployeeAPI.Migrations;
 using EmployeeAPI.Models;
+using FluentValidation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Configuration;
 using Serilog;
@@ -17,9 +19,12 @@ builder.Host.UseSerilog();
 
 
 builder.Services.AddDbContext<EmployeeDb>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+builder.Services.AddTransient<IValidator<Employee>, EmployeeValidator>();
 builder.Services.AddScoped<IEmployeeRepositary,EmployeeRepositary>();
 builder.Services.AddScoped<IEmployeeService,EmployeeService>();
 builder.Services.AddScoped<ISeedFaker,SeedFaker>();
+builder.Services.AddTransient<IValidator, EmployeeValidator>();
+
 
 builder.Services.AddCors(options =>
 {
@@ -58,16 +63,16 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 
-
 app.MapGet("/employees", async (IEmployeeService employeeService) =>
 {
     var result = await employeeService.GetEmployees();    
     return result.Success ? Results.Ok(result.Data) : Results.BadRequest(result);  
         
 });
-app.MapPost("/employees", async (IEmployeeService employeeService, Employee employee) =>
+app.MapPost("/employees", async (IEmployeeService employeeService, EmployeeDTO employee) =>
 {
-    var result = await employeeService.CreateEmployee(employee);
+    var dbEntity = new Employee(employee);
+    var result = await employeeService.CreateEmployee(dbEntity);
     if (result.Success)
     {
         return Results.Created($"/employee/{result.Data.Id}", result.Data);
@@ -83,9 +88,10 @@ app.MapGet("/employees/{Id}", async (IEmployeeService employeeService, int Id) =
     var result = await employeeService.GetEmployee(Id);    
     return result.Success ? Results.Ok(result.Data) : Results.NotFound();
 });
-app.MapPut("/employees/{Id}", async (IEmployeeService employeeService, Employee updatedEmployee, int Id) =>
+app.MapPut("/employees/{Id}", async (IEmployeeService employeeService, EmployeeDTO updatedEmployee, int Id) =>
 {
-    var result = await employeeService.UpdateEmployee(updatedEmployee,Id);
+    var dbEntity = new Employee(updatedEmployee);
+    var result = await employeeService.UpdateEmployee(dbEntity, Id);
     if(result.Success == false)
     {
         return Results.NotFound();
