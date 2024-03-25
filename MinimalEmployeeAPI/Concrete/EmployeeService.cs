@@ -7,12 +7,14 @@ namespace EmployeeAPI.Concrete
 {
     public class EmployeeService : IEmployeeService
     {
-        private readonly IEmployeeRepositary _employeeRepositary;
+        private readonly IEmployeeCommandRepositary _employeeCommandRepositary;
+        private readonly IEmployeeQueryRepositary _employeeQueryRepositary;
         private readonly IValidator<Employee> _employeeValidator;
 
-        public EmployeeService(IEmployeeRepositary employeeRepositary,IValidator<Employee> employeeValidator)
+        public EmployeeService(IEmployeeCommandRepositary employeeCommandRepositary,IEmployeeQueryRepositary employeeQueryRepositary,IValidator<Employee> employeeValidator)
         {
-            _employeeRepositary = employeeRepositary;
+            _employeeCommandRepositary = employeeCommandRepositary;
+            _employeeQueryRepositary = employeeQueryRepositary;
             _employeeValidator = employeeValidator;
         }
         public async Task<IResponseDataModel<EmployeeDTO>> CreateEmployee(Employee employee)
@@ -28,7 +30,7 @@ namespace EmployeeAPI.Concrete
                         Message = string.Join(" ", validationResult.Errors.Select(x=> x.ErrorMessage))
                     };
                 }
-                var result = await _employeeRepositary.CreateEmployee(employee);
+                var result = await _employeeCommandRepositary.CreateEmployee(employee);
                 if (result.Success)
                 {
                     return new ResponseDataModel<EmployeeDTO>
@@ -52,7 +54,7 @@ namespace EmployeeAPI.Concrete
         {
             try
             {
-                var result = await _employeeRepositary.DeleteEmployee(employeeId);
+                var result = await _employeeCommandRepositary.DeleteEmployee(employeeId);
                 if (result.Success)
                 {
                     return new ResponseModel
@@ -75,7 +77,7 @@ namespace EmployeeAPI.Concrete
         {
             try
             {
-                var result = await _employeeRepositary.GetEmployee(employeeId);
+                var result = await _employeeQueryRepositary.GetEmployee(employeeId);
                 if (result.Success)
                 {
                     return new ResponseDataModel<EmployeeDTO>
@@ -98,7 +100,7 @@ namespace EmployeeAPI.Concrete
 
         public async Task<IResponseDataModel<IEnumerable<EmployeeDTO>>> GetEmployees()
         {
-            var result = await _employeeRepositary.GetEmployees();            
+            var result = await _employeeQueryRepositary.GetEmployees();            
             return new ResponseDataModel<IEnumerable<EmployeeDTO>>
             {
                 Data = result.Data.Select(x => new EmployeeDTO(x)),
@@ -110,7 +112,7 @@ namespace EmployeeAPI.Concrete
         {
             try
             {
-                var result = await _employeeRepositary.UpdateEmployee(employee, id);
+                var result = await _employeeCommandRepositary.UpdateEmployee(employee, id);
                 if (result.Success)
                 {
                     return new ResponseModel
