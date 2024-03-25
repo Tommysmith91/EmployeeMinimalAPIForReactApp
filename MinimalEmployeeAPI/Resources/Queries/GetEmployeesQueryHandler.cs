@@ -1,5 +1,6 @@
 ﻿using EmployeeAPI.Abstractions;
-using EmployeeAPI.Models;
+using EmployeeAPI.Entities;
+using EmployeeAPI.ResponseModels;
 using MediatR;
 
 namespace EmployeeAPI.Resources.Queries

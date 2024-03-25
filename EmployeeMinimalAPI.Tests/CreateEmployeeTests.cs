@@ -1,5 +1,5 @@
-using EmployeeAPI;
-using EmployeeAPI.Models;
+using EmployeeAPI.Entities;
+using EmployeeAPI.Resources;
 using EmployeeMinimalAPI.Tests.Abstractions;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;

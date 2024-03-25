@@ -1,6 +1,8 @@
 ﻿using EmployeeAPI.Abstractions;
 using EmployeeAPI.Concrete;
+using EmployeeAPI.Entities;
 using EmployeeAPI.Models;
+using EmployeeAPI.ResponseModels;
 using FluentValidation;
 using MediatR;
 using System.Security.AccessControl;

@@ -1,8 +1,10 @@
 using EmployeeAPI;
 using EmployeeAPI.Abstractions;
 using EmployeeAPI.Concrete;
+using EmployeeAPI.DataSeeder;
+using EmployeeAPI.Entities;
 using EmployeeAPI.Migrations;
-using EmployeeAPI.Models;
+using EmployeeAPI.Resources;
 using EmployeeAPI.Resources.Commands;
 using EmployeeAPI.Resources.Queries;
 using FluentValidation;
@@ -29,7 +31,6 @@ builder.Services.AddTransient<IValidator, EmployeeValidator>();
 builder.Services.AddTransient<IValidator<Employee>, EmployeeValidator>();
 builder.Services.AddScoped<IEmployeeQueryRepositary,EmployeeQueryRepositary>();
 builder.Services.AddScoped<IEmployeeCommandRepositary, EmployeeCommandRepositary>();
-builder.Services.AddScoped<IEmployeeService,EmployeeService>();
 builder.Services.AddScoped<ISeedFaker,SeedFaker>();
 
 builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
@@ -104,10 +105,14 @@ app.MapGet("/employees/{Id}", async (IMediator mediator, int Id) =>
     var employeeDTO = new EmployeeDTO(result.Data);
     return result.Success ? Results.Ok(employeeDTO) : Results.NotFound();
 });
-app.MapPut("/employees/{Id}", async (IEmployeeService employeeService, EmployeeDTO updatedEmployee, int Id) =>
+app.MapPut("/employees/{Id}", async (IMediator mediator, EmployeeDTO updatedEmployee, int Id) =>
 {
-    var dbEntity = new Employee(updatedEmployee);
-    var result = await employeeService.UpdateEmployee(dbEntity, Id);
+    var updateEmployeeCommand = new UpdateEmployeeCommand()
+    {
+        Employee = updatedEmployee,
+        Id = Id
+    };
+    var result = await mediator.Send(updateEmployeeCommand);
     if(result.Success == false)
     {
         return Results.NotFound();
@@ -115,9 +120,9 @@ app.MapPut("/employees/{Id}", async (IEmployeeService employeeService, EmployeeD
     return Results.NoContent();
 
 });
-app.MapDelete("employee/{Id}", async (IEmployeeService employeeService, int Id) =>
+app.MapDelete("employee/{Id}", async (IMediator mediator, int Id) =>
 {
-    var result = await employeeService.DeleteEmployee(Id);
+    var result = await mediator.Send(new DeleteEmployeeCommand() { Id = Id }); ;
     if(result.Success == false)
     {
         return Results.NotFound();

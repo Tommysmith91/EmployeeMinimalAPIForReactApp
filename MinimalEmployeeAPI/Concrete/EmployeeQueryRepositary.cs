@@ -1,5 +1,7 @@
 ﻿using EmployeeAPI.Abstractions;
+using EmployeeAPI.Entities;
 using EmployeeAPI.Models;
+using EmployeeAPI.ResponseModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeAPI.Concrete

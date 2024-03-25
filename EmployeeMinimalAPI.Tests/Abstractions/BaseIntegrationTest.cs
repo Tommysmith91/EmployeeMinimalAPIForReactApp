@@ -1,6 +1,7 @@
 ﻿using EmployeeAPI;
 using EmployeeAPI.Abstractions;
 using EmployeeAPI.Concrete;
+using EmployeeAPI.DataSeeder;
 using FluentAssertions.Common;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -16,16 +17,16 @@ namespace EmployeeMinimalAPI.Tests.Abstractions
         private readonly IServiceScope _scope;
         protected EmployeeDb _dbContext { get; }
         protected ISeedFaker _seedFaker { get; }
-        protected IEmployeeRepositary _employeeRepositary { get; }
-        protected IEmployeeService _employeeService { get; }
+        protected IEmployeeCommandRepositary _employeeCommandRepositary { get; }
+        protected IEmployeeQueryRepositary _employeeQueryRepositary { get; }
 
         protected BaseIntegrationTest(IntegrationTestWebAppFactory factory)
         {
             _scope = factory.Services.CreateScope();
             _dbContext = _scope.ServiceProvider.GetRequiredService<EmployeeDb>();
             _seedFaker = _scope.ServiceProvider.GetRequiredService<ISeedFaker>();
-            _employeeRepositary = _scope.ServiceProvider.GetRequiredService<IEmployeeRepositary>();
-            _employeeService = _scope.ServiceProvider.GetRequiredService<IEmployeeService>();
+            _employeeCommandRepositary = _scope.ServiceProvider.GetRequiredService<IEmployeeCommandRepositary>();
+            _employeeQueryRepositary = _scope.ServiceProvider.GetRequiredService<IEmployeeQueryRepositary>();
 
         }
 

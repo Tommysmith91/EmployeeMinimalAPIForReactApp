@@ -1,4 +1,4 @@
-﻿using EmployeeAPI.Abstractions;
+﻿using EmployeeAPI.ResponseModels;
 
 namespace EmployeeAPI.Models
 {

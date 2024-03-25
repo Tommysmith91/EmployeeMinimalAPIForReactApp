@@ -3,8 +3,9 @@ using MediatR;
 
 namespace EmployeeAPI.Resources.Commands
 {
-    public class DeleteEmployeeCommand : IRequest<IResponseModel>
+    public class UpdateEmployeeCommand : IRequest<IResponseModel>
     {
+        public EmployeeDTO Employee { get; set; }
         public int Id { get; set; }
     }
 }

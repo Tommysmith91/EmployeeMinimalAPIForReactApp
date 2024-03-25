@@ -1,4 +1,4 @@
-﻿namespace EmployeeAPI.Abstractions
+﻿namespace EmployeeAPI.DataSeeder
 {
     public interface ISeedFaker
     {

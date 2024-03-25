@@ -1,4 +1,4 @@
-﻿using EmployeeAPI.Models;
+﻿using EmployeeAPI.Entities;
 using FluentValidation;
 
 namespace EmployeeAPI.Concrete

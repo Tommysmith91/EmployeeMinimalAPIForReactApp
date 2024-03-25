@@ -1,4 +1,4 @@
-﻿using EmployeeAPI.Abstractions;
+﻿using EmployeeAPI.ResponseModels;
 using MediatR;
 
 namespace EmployeeAPI.Resources.Commands

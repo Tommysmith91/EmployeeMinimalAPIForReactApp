@@ -1,4 +1,5 @@
-﻿using EmployeeAPI.Models;
+﻿using EmployeeAPI.Entities;
+using EmployeeAPI.ResponseModels;
 
 namespace EmployeeAPI.Abstractions
 {
