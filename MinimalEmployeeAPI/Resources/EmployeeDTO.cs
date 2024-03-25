@@ -1,6 +1,6 @@
-﻿using EmployeeAPI.Models;
+﻿using EmployeeAPI.Entities;
 
-namespace EmployeeAPI
+namespace EmployeeAPI.Resources
 {
     public class EmployeeDTO
     {
@@ -22,12 +22,12 @@ namespace EmployeeAPI
             Name = employee.Name;
             Age = employee.Age;
             HasRightToWork = employee.HasRightToWork;
-            AddressLine1= employee.AddressLine1;
-            AddressLine2= employee.AddressLine2;
-            CityTown= employee.CityTown;
-            Postcode= employee.Postcode;
-            Country= employee.Country;
-            StartOfEmployment= employee.StartOfEmployment; 
-        }        
+            AddressLine1 = employee.AddressLine1;
+            AddressLine2 = employee.AddressLine2;
+            CityTown = employee.CityTown;
+            Postcode = employee.Postcode;
+            Country = employee.Country;
+            StartOfEmployment = employee.StartOfEmployment;
+        }
     }
 }

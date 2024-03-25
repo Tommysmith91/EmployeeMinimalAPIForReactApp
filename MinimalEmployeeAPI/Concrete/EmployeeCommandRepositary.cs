@@ -1,14 +1,15 @@
 ﻿using EmployeeAPI.Abstractions;
+using EmployeeAPI.Entities;
 using EmployeeAPI.Models;
-using Microsoft.EntityFrameworkCore;
+using EmployeeAPI.ResponseModels;
 
 namespace EmployeeAPI.Concrete
 {
-    public class EmployeeRepositary : IEmployeeRepositary
+    public class EmployeeCommandRepositary : IEmployeeCommandRepositary
     {
         private readonly EmployeeDb _employeeDb;
 
-        public EmployeeRepositary(EmployeeDb employeeDb)
+        public EmployeeCommandRepositary(EmployeeDb employeeDb)
         {
             _employeeDb = employeeDb;
         }
@@ -53,37 +54,9 @@ namespace EmployeeAPI.Concrete
                 Success = true
             };
         }
-        public async Task<IResponseDataModel<Employee>> GetEmployee(int employeeId)
-        {
-            var id = employeeId;
-            var employee = await _employeeDb.Employees.FindAsync(id);
-            if (employee == null)
-            {
-                return new ResponseDataModel<Employee>
-                {
-                    Success = false,
-                    Message = "Employee Not Found"
-                };
-            }
-            return new ResponseDataModel<Employee>
-            {
-                Success = true,
-                Data = employee
-            };
-        }
-
-        public async Task<IResponseDataModel<IEnumerable<Employee>>> GetEmployees()
-        {
-            return new ResponseDataModel<IEnumerable<Employee>>
-            {
-                Data = await _employeeDb.Employees.ToListAsync(),
-                Success = true
-            };
-        }
 
         public async Task<IResponseModel> UpdateEmployee(Employee employee, int id)
         {
-
             var existingEmployee = await _employeeDb.Employees.FindAsync(id);
             if (existingEmployee == null)
             {
@@ -102,7 +75,7 @@ namespace EmployeeAPI.Concrete
             existingEmployee.CityTown = employee.CityTown;
             existingEmployee.Country = employee.Country;
             existingEmployee.StartOfEmployment = employee.StartOfEmployment;
-            
+
 
             await _employeeDb.SaveChangesAsync();
             return new ResponseModel

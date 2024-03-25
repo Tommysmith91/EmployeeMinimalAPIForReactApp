@@ -1,5 +1,5 @@
 ﻿
-using EmployeeAPI.Models;
+using EmployeeAPI.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeAPI

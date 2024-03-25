@@ -1,12 +1,22 @@
 using EmployeeAPI;
 using EmployeeAPI.Abstractions;
 using EmployeeAPI.Concrete;
+using EmployeeAPI.DataSeeder;
+using EmployeeAPI.Entities;
 using EmployeeAPI.Migrations;
-using EmployeeAPI.Models;
+using EmployeeAPI.Resources;
+using EmployeeAPI.Resources.Commands;
+using EmployeeAPI.Resources.Queries;
 using FluentValidation;
+using MediatR;
+using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Configuration;
 using Serilog;
+using System.Net;
+using System.Reflection;
 
 Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build()).CreateLogger();
 var builder = WebApplication.CreateBuilder(args);
@@ -19,11 +29,13 @@ builder.Host.UseSerilog();
 
 
 builder.Services.AddDbContext<EmployeeDb>(options => options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
-builder.Services.AddTransient<IValidator<Employee>, EmployeeValidator>();
-builder.Services.AddScoped<IEmployeeRepositary,EmployeeRepositary>();
-builder.Services.AddScoped<IEmployeeService,EmployeeService>();
-builder.Services.AddScoped<ISeedFaker,SeedFaker>();
 builder.Services.AddTransient<IValidator, EmployeeValidator>();
+builder.Services.AddTransient<IValidator<Employee>, EmployeeValidator>();
+builder.Services.AddScoped<IEmployeeQueryRepositary,EmployeeQueryRepositary>();
+builder.Services.AddScoped<IEmployeeCommandRepositary, EmployeeCommandRepositary>();
+builder.Services.AddScoped<ISeedFaker,SeedFaker>();
+
+builder.Services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(typeof(Program).Assembly));
 
 
 builder.Services.AddCors(options =>
@@ -61,18 +73,43 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
-
-app.MapGet("/employees", async (IEmployeeService employeeService) =>
+app.UseExceptionHandler(applicationError =>
 {
-    var result = await employeeService.GetEmployees();    
-    return result.Success ? Results.Ok(result.Data) : Results.BadRequest(result);  
+    applicationError.Run(async context =>
+    {
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        context.Response.ContentType = "application/json";
+        var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+        if (contextFeature != null)
+        {
+            Log.Logger.Error($"Error: {contextFeature.Error}");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = "Internal Server Error"
+            });
+        }
+    }
+
+    );
+});
+
+
+app.MapGet("/employees", async (IMediator mediator) =>
+{    
+    var result = await mediator.Send(new GetEmployeesQuery());
+    var employeeDTOS = result.Data.Select(x => new EmployeeDTO(x));
+    return result.Success ? Results.Ok(employeeDTOS) : Results.BadRequest(result);  
         
 });
-app.MapPost("/employees", async (IEmployeeService employeeService, EmployeeDTO employee) =>
+app.MapPost("/employees", async (IMediator mediator, EmployeeDTO employee) =>
 {
-    var dbEntity = new Employee(employee);
-    var result = await employeeService.CreateEmployee(dbEntity);
+    var command = new CreateEmployeeCommand()
+    {
+        Employee = employee
+    };
+
+    var result = await mediator.Send(command);
     if (result.Success)
     {
         return Results.Created($"/employee/{result.Data.Id}", result.Data);
@@ -83,15 +120,21 @@ app.MapPost("/employees", async (IEmployeeService employeeService, EmployeeDTO e
     }
     return Results.StatusCode(StatusCodes.Status500InternalServerError);
 });
-app.MapGet("/employees/{Id}", async (IEmployeeService employeeService, int Id) =>
+app.MapGet("/employees/{Id}", async (IMediator mediator, int Id) =>
 {
-    var result = await employeeService.GetEmployee(Id);    
-    return result.Success ? Results.Ok(result.Data) : Results.NotFound();
+    var query = new GetEmployeeQuery() { Id = Id };
+    var result = await mediator.Send(query);
+    var employeeDTO = new EmployeeDTO(result.Data);
+    return result.Success ? Results.Ok(employeeDTO) : Results.NotFound();
 });
-app.MapPut("/employees/{Id}", async (IEmployeeService employeeService, EmployeeDTO updatedEmployee, int Id) =>
+app.MapPut("/employees/{Id}", async (IMediator mediator, EmployeeDTO updatedEmployee, int Id) =>
 {
-    var dbEntity = new Employee(updatedEmployee);
-    var result = await employeeService.UpdateEmployee(dbEntity, Id);
+    var updateEmployeeCommand = new UpdateEmployeeCommand()
+    {
+        Employee = updatedEmployee,
+        Id = Id
+    };
+    var result = await mediator.Send(updateEmployeeCommand);
     if(result.Success == false)
     {
         return Results.NotFound();
@@ -99,9 +142,9 @@ app.MapPut("/employees/{Id}", async (IEmployeeService employeeService, EmployeeD
     return Results.NoContent();
 
 });
-app.MapDelete("employee/{Id}", async (IEmployeeService employeeService, int Id) =>
+app.MapDelete("employee/{Id}", async (IMediator mediator, int Id) =>
 {
-    var result = await employeeService.DeleteEmployee(Id);
+    var result = await mediator.Send(new DeleteEmployeeCommand() { Id = Id }); ;
     if(result.Success == false)
     {
         return Results.NotFound();

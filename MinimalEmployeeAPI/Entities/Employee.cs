@@ -1,10 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
+using EmployeeAPI.Resources;
 
-namespace EmployeeAPI.Models
+namespace EmployeeAPI.Entities
 {
     public class Employee
-    {        
+    {
         public int Id { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Age { get; set; }

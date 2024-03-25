@@ -1,7 +1,6 @@
-﻿using EmployeeAPI.Abstractions;
-using EmployeeAPI.Models;
+﻿using EmployeeAPI.Entities;
 
-namespace EmployeeAPI
+namespace EmployeeAPI.DataSeeder
 {
     public class SeedFaker : ISeedFaker
     {
@@ -15,7 +14,7 @@ namespace EmployeeAPI
         }
         public void Initialise()
         {
-            if(_context.Employees.Any() == false)
+            if (_context.Employees.Any() == false)
             {
                 _context.Employees.AddRange(CreateSomeDummyData());
                 _context.SaveChanges();
@@ -27,7 +26,7 @@ namespace EmployeeAPI
             for (var noOfEmployeesToCreate = 1; noOfEmployeesToCreate <= MAX_NUMBER_OF_FAKE_ENTRIES; ++noOfEmployeesToCreate)
             {
                 employees.Add(new Employee
-                {                    
+                {
                     AddressLine1 = $"{Faker.LocationFaker.StreetNumber()} {Faker.LocationFaker.StreetName()}",
                     CityTown = Faker.LocationFaker.City(),
                     Name = Faker.NameFaker.Name(),
