@@ -9,11 +9,13 @@ using EmployeeAPI.Resources.Commands;
 using EmployeeAPI.Resources.Queries;
 using FluentValidation;
 using MediatR;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging.Configuration;
 using Serilog;
+using System.Net;
 using System.Reflection;
 
 Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(new ConfigurationBuilder().AddJsonFile("appsettings.json").Build()).CreateLogger();
@@ -71,10 +73,30 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseExceptionHandler(applicationError =>
+{
+    applicationError.Run(async context =>
+    {
+        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+        context.Response.ContentType = "application/json";
+        var contextFeature = context.Features.Get<IExceptionHandlerFeature>();
+        if (contextFeature != null)
+        {
+            Log.Logger.Error($"Error: {contextFeature.Error}");
+            await context.Response.WriteAsJsonAsync(new
+            {
+                StatusCode = context.Response.StatusCode,
+                Message = "Internal Server Error"
+            });
+        }
+    }
+
+    );
+});
 
 
 app.MapGet("/employees", async (IMediator mediator) =>
-{
+{    
     var result = await mediator.Send(new GetEmployeesQuery());
     var employeeDTOS = result.Data.Select(x => new EmployeeDTO(x));
     return result.Success ? Results.Ok(employeeDTOS) : Results.BadRequest(result);  
